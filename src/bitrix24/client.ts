@@ -1,8 +1,12 @@
 import fetch from 'node-fetch';
 import { z } from 'zod';
+import { config } from 'dotenv';
+
+// Load environment variables
+config();
 
 // Environment configuration
-const BITRIX24_WEBHOOK_URL = process.env.BITRIX24_WEBHOOK_URL || 
+const BITRIX24_WEBHOOK_URL = process.env.BITRIX24_WEBHOOK_URL ||
   'https://sviluppofranchising.bitrix24.it/rest/27/wwugdez6m774803q/';
 
 // Validation schemas
@@ -80,12 +84,34 @@ export interface BitrixTask {
   ID?: string;
   TITLE?: string;
   DESCRIPTION?: string;
+  DESCRIPTION_IN_BBCODE?: 'Y' | 'N'; // Whether description uses BBCode
   RESPONSIBLE_ID?: string;
-  DEADLINE?: string;
+  CREATED_BY?: string;
+  ACCOMPLICES?: string[]; // Co-executors IDs
+  AUDITORS?: string[]; // Auditors IDs
+  DEADLINE?: string; // Deadline date
+  START_DATE_PLAN?: string; // Planned start date
+  END_DATE_PLAN?: string; // Planned end date
   PRIORITY?: '0' | '1' | '2'; // 0=Low, 1=Normal, 2=High
-  STATUS?: '1' | '2' | '3' | '4' | '5'; // 1=New, 2=Pending, 3=In Progress, 4=Completed, 5=Deferred
-  STAGE?: string;
-  UF_CRM_TASK?: string[]; // CRM entities linked to task
+  STATUS?: '1' | '2' | '3' | '4' | '5' | '6' | '7'; // 1=New, 2=Pending, 3=In Progress, 4=Waiting for control, 5=Completed, 6=Deferred, 7=Declined
+  STAGE_ID?: string; // Stage ID
+  GROUP_ID?: string; // Workgroup/Project ID
+  PARENT_ID?: string; // Parent task ID
+  DEPENDS_ON?: string[]; // Dependencies - array of task IDs
+  TIME_ESTIMATE?: string; // Time estimate in seconds
+  TIME_SPENT_IN_LOGS?: string; // Time spent (from time tracking)
+  ALLOW_CHANGE_DEADLINE?: 'Y' | 'N'; // Allow executor to change deadline
+  ALLOW_TIME_TRACKING?: 'Y' | 'N'; // Allow time tracking
+  TASK_CONTROL?: 'Y' | 'N'; // Task control enabled
+  ADD_IN_REPORT?: 'Y' | 'N'; // Add to report
+  MATCH_WORK_TIME?: 'Y' | 'N'; // Match work time
+  FORUM_TOPIC_ID?: string; // Forum topic ID
+  FORUM_ID?: string; // Forum ID
+  SITE_ID?: string; // Site ID
+  TAGS?: string[]; // Tags array
+  FILES?: string[]; // Attached files
+  UF_CRM_TASK?: string[]; // CRM entities linked to task (e.g., ['D_123', 'L_456'])
+  UF_TASK_WEBDAV_FILES?: string[]; // WebDAV files
 }
 
 export interface BitrixCompany {
@@ -564,13 +590,15 @@ export class Bitrix24Client {
     return result === true;
   }
 
-  async listTasks(params: { 
+  async listTasks(params: {
     select?: string[];
     filter?: Record<string, any>;
     order?: Record<string, string>;
     start?: number;
   } = {}): Promise<BitrixTask[]> {
-    const result = await this.makeRequest('tasks.task.list', params);
+    // Bitrix24 tasks API doesn't support select parameter directly - remove it
+    const { select, ...otherParams } = params;
+    const result = await this.makeRequest('tasks.task.list', otherParams);
     return result.tasks || [];
   }
 

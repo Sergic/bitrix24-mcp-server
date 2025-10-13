@@ -385,6 +385,89 @@ export const getCompaniesFromDateRangeTool: Tool = {
   }
 };
 
+// Task Management Tools
+export const createTaskTool: Tool = {
+  name: 'bitrix24_create_task',
+  description: 'Create a new task in Bitrix24',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      title: { type: 'string', description: 'Task title' },
+      description: { type: 'string', description: 'Task description' },
+      responsibleId: { type: 'string', description: 'Responsible user ID' },
+      deadline: { type: 'string', description: 'Task deadline in YYYY-MM-DD format' },
+      priority: {
+        type: 'string',
+        enum: ['0', '1', '2'],
+        description: 'Task priority: 0=Low, 1=Normal, 2=High',
+        default: '1'
+      },
+      crmEntities: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Array of CRM entity IDs to link (e.g., ["CO_123", "D_456"])'
+      }
+    },
+    required: ['title']
+  }
+};
+
+export const getTaskTool: Tool = {
+  name: 'bitrix24_get_task',
+  description: 'Retrieve task information by ID',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      id: { type: 'string', description: 'Task ID' }
+    },
+    required: ['id']
+  }
+};
+
+export const listTasksTool: Tool = {
+  name: 'bitrix24_list_tasks',
+  description: 'List tasks with optional filtering and ordering',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      limit: { type: 'number', description: 'Maximum number of tasks to return', default: 20 },
+      filter: { type: 'object', description: 'Filter criteria (e.g., {"RESPONSIBLE_ID": "1", "STATUS": "3"})' },
+      select: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Fields to return (default: all)',
+        default: ['*']
+      }
+    }
+  }
+};
+
+export const updateTaskTool: Tool = {
+  name: 'bitrix24_update_task',
+  description: 'Update an existing task in Bitrix24',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      id: { type: 'string', description: 'Task ID' },
+      title: { type: 'string', description: 'Task title' },
+      description: { type: 'string', description: 'Task description' },
+      responsibleId: { type: 'string', description: 'Responsible user ID' },
+      deadline: { type: 'string', description: 'Task deadline in YYYY-MM-DD format' },
+      priority: {
+        type: 'string',
+        enum: ['0', '1', '2'],
+        description: 'Task priority: 0=Low, 1=Normal, 2=High'
+      },
+      status: {
+        type: 'string',
+        enum: ['1', '2', '3', '4', '5'],
+        description: 'Task status: 1=New, 2=Pending, 3=In Progress, 4=Completed, 5=Deferred'
+      }
+    },
+    required: ['id']
+  }
+};
+
 // Search and Utility Tools
 export const searchCRMTool: Tool = {
   name: 'bitrix24_search_crm',
@@ -937,6 +1020,10 @@ export const allTools = [
   updateCompanyTool,
   getLatestCompaniesTool,
   getCompaniesFromDateRangeTool,
+  createTaskTool,
+  getTaskTool,
+  listTasksTool,
+  updateTaskTool,
   searchCRMTool,
   validateWebhookTool,
   diagnosePermissionsTool,
@@ -1189,6 +1276,41 @@ export async function executeToolCall(name: string, args: any): Promise<any> {
           args.limit || 50
         );
         return { success: true, companies: dateRangeCompanies };
+
+      case 'bitrix24_create_task':
+        const task: BitrixTask = {
+          TITLE: args.title,
+          DESCRIPTION: args.description,
+          RESPONSIBLE_ID: args.responsibleId,
+          DEADLINE: args.deadline,
+          PRIORITY: args.priority || '1',
+          UF_CRM_TASK: args.crmEntities
+        };
+        const taskId = await bitrix24Client.createTask(task);
+        return { success: true, taskId, message: `Task created with ID: ${taskId}` };
+
+      case 'bitrix24_get_task':
+        const taskData = await bitrix24Client.getTask(args.id);
+        return { success: true, task: taskData };
+
+      case 'bitrix24_list_tasks':
+        const tasks = await bitrix24Client.listTasks({
+          filter: args.filter,
+          select: args.select || ['*']
+        });
+        return { success: true, tasks: tasks.slice(0, args.limit || 20) };
+
+      case 'bitrix24_update_task':
+        const updateTask: Partial<BitrixTask> = {};
+        if (args.title) updateTask.TITLE = args.title;
+        if (args.description) updateTask.DESCRIPTION = args.description;
+        if (args.responsibleId) updateTask.RESPONSIBLE_ID = args.responsibleId;
+        if (args.deadline) updateTask.DEADLINE = args.deadline;
+        if (args.priority) updateTask.PRIORITY = args.priority;
+        if (args.status) updateTask.STATUS = args.status;
+
+        const taskUpdated = await bitrix24Client.updateTask(args.id, updateTask);
+        return { success: true, updated: taskUpdated, message: `Task ${args.id} updated successfully` };
 
       case 'bitrix24_search_crm':
         const searchResults = await bitrix24Client.searchCRM(args.query, args.entityTypes);

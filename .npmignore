@@ -1,0 +1,45 @@
+# Source files (we only ship compiled build/)
+src/
+tsconfig.json
+
+# Development files
+*.test.js
+test/
+.env
+.env.*
+
+# HTTP/Alternative servers (not needed for stdio MCP)
+http-streamable-server.js
+n8n-api-server.js
+server.js
+api-examples.sh
+
+# Documentation (except README.md)
+QUICK_START_*.md
+HTTP_STREAMABLE_GUIDE.md
+
+# IDE and OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# CI/CD
+.github/
+azure/
+
+# Logs
+*.log
+npm-debug.log*
+logs/
+
+# Dependencies (users will install their own)
+node_modules/
+
+# Build artifacts we don't need
+*.tsbuildinfo

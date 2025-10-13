@@ -1,0 +1,174 @@
+{
+  "name": "Create Lead from Webhook - Bitrix24 MCP",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bitrix24-lead",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "example-webhook-id"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Извлекаем данные из webhook payload\nconst body = $input.item.json.body;\n\nreturn {\n  name: body.name || body.first_name || '',\n  lastName: body.last_name || body.surname || '',\n  email: body.email || '',\n  phone: body.phone || body.mobile || '',\n  company: body.company || '',\n  message: body.message || body.comment || '',\n  source: body.source || 'Website Form',\n  \n  prompt: `Обработай новый запрос с формы:\n1. Создай лид в Bitrix24 со следующими данными:\n   - Имя: ${body.name || body.first_name || ''}\n   - Фамилия: ${body.last_name || ''}\n   - Email: ${body.email || ''}\n   - Телефон: ${body.phone || ''}\n   - Компания: ${body.company || ''}\n   - Сообщение: ${body.message || ''}\n   - Источник: ${body.source || 'Website Form'}\n\n2. Определи приоритет лида (высокий/средний/низкий) на основе:\n   - Ключевых слов в сообщении (срочно, важно, крупный проект = высокий)\n   - Наличие компании (компания = средний/высокий)\n   - Полнота данных\n\n3. Назначь ответственного менеджера по региону или load balancing\n\n4. Верни ID созданного лида и назначенного менеджера`\n};"
+      },
+      "id": "extract-data",
+      "name": "Extract Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4",
+        "options": {}
+      },
+      "id": "ai-agent",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3000/mcp",
+        "authentication": "none",
+        "toolsSelection": "selected",
+        "tools": [
+          "bitrix24_create_lead",
+          "bitrix24_get_all_users"
+        ]
+      },
+      "id": "mcp-client",
+      "name": "MCP Client Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolMcp",
+      "typeVersion": 1,
+      "position": [650, 450]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Парсим ответ AI для получения структурированных данных\nconst aiOutput = $input.item.json.output;\n\n// Пытаемся извлечь ID лида\nconst leadIdMatch = aiOutput.match(/ID[:\\s]*(\\d+)/);\nconst leadId = leadIdMatch ? leadIdMatch[1] : null;\n\n// Извлекаем информацию о менеджере\nconst managerMatch = aiOutput.match(/менеджер[:\\s]*([^\\n]+)/);\nconst manager = managerMatch ? managerMatch[1] : 'Не назначен';\n\nreturn {\n  success: !!leadId,\n  leadId,\n  manager,\n  message: aiOutput,\n  originalData: $('Extract Data').item.json\n};"
+      },
+      "id": "parse-response",
+      "name": "Parse Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "content": "=✅ Новый лид создан!\n\n**ID лида:** {{ $json.leadId }}\n**Ответственный:** {{ $json.manager }}\n**Источник:** {{ $json.originalData.source }}\n\n**Данные клиента:**\n- Имя: {{ $json.originalData.name }} {{ $json.originalData.lastName }}\n- Email: {{ $json.originalData.email }}\n- Телефон: {{ $json.originalData.phone }}\n- Компания: {{ $json.originalData.company }}\n\n**Сообщение:**\n{{ $json.originalData.message }}",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "additionalFields": {}
+      },
+      "id": "notify-telegram",
+      "name": "Notify Manager (Telegram)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "webhook-response",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1050, 400]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Response": {
+      "main": [
+        [
+          {
+            "node": "Notify Manager (Telegram)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "instanceId": "example"
+  },
+  "pinData": {},
+  "versionId": "1.0.0",
+  "tags": [
+    {
+      "name": "Bitrix24"
+    },
+    {
+      "name": "Lead Generation"
+    },
+    {
+      "name": "Webhook"
+    },
+    {
+      "name": "MCP"
+    }
+  ]
+}

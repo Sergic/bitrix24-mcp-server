@@ -1,0 +1,138 @@
+{
+  "name": "Daily Sales Report - Bitrix24 MCP",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Вычисляем вчерашнюю дату\nconst yesterday = new Date();\nyesterday.setDate(yesterday.getDate() - 1);\n\nconst startDate = yesterday.toISOString().split('T')[0];\nconst endDate = startDate;\n\nreturn {\n  startDate,\n  endDate,\n  prompt: `Проанализируй вчерашние продажи (${startDate}):\n1. Получи все сделки за этот день\n2. Подсчитай общую сумму сделок\n3. Найди топ-3 менеджеров по количеству и сумме\n4. Определи проблемные сделки (застрявшие в одном статусе >7 дней)\n5. Сформируй краткий отчет в формате:\n   - Итого сделок: X на сумму Y\n   - Топ менеджеры: ...\n   - Проблемы: ...`\n};"
+      },
+      "id": "prepare-prompt",
+      "name": "Prepare Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4",
+        "options": {}
+      },
+      "id": "ai-agent",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3000/mcp",
+        "authentication": "none",
+        "toolsSelection": "all"
+      },
+      "id": "mcp-client",
+      "name": "MCP Client Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolMcp",
+      "typeVersion": 1,
+      "position": [650, 450]
+    },
+    {
+      "parameters": {
+        "fromEmail": "reports@yourcompany.com",
+        "toEmail": "sales-team@yourcompany.com",
+        "subject": "=Ежедневный отчет по продажам - {{ $now.format('dd.MM.yyyy') }}",
+        "emailFormat": "html",
+        "text": "={{ $json.output }}"
+      },
+      "id": "send-email",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Prompt": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "instanceId": "example"
+  },
+  "pinData": {},
+  "versionId": "1.0.0",
+  "tags": [
+    {
+      "name": "Bitrix24"
+    },
+    {
+      "name": "Sales"
+    },
+    {
+      "name": "Reports"
+    },
+    {
+      "name": "MCP"
+    }
+  ]
+}

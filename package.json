@@ -2,37 +2,61 @@
   "name": "bitrix24-mcp-server",
   "version": "1.0.0",
   "type": "module",
-  "description": "Bitrix24 MCP Server for AI Agent Integration",
-  "main": "server.js",
+  "description": "Bitrix24 MCP Server for AI Agent Integration - Connect Claude Desktop to Bitrix24 CRM",
+  "main": "./build/index.js",
   "bin": {
-    "bitrix24-mcp": "./build/index.js"
+    "bitrix24-mcp-server": "./build/index.js"
   },
   "scripts": {
     "prebuild": "node -e \"const fs = require('fs'); if (!fs.existsSync('build')) fs.mkdirSync('build', {recursive: true});\"",
     "build": "tsc",
     "build:unix": "tsc && chmod +x build/index.js",
     "dev": "tsc --watch",
-    "start": "node server.js",
+    "start": "node build/index.js",
+    "start:http": "node http-streamable-server.js",
+    "start:n8n": "node n8n-api-server.js",
     "test": "node test/integration.test.js",
-    "postinstall": "node -e \"try { require('child_process').execSync('npm run build', {stdio: 'inherit'}); } catch(e) { console.log('Build failed, but continuing...'); }\"",
-    "azure:start": "node server.js"
+    "prepublishOnly": "npm run build",
+    "azure:start": "node http-streamable-server.js"
   },
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"
   },
-  "files": ["build"],
+  "files": [
+    "build/",
+    "README.md",
+    "LICENSE"
+  ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.4.0",
-    "zod": "^3.22.4",
     "node-fetch": "^3.3.2",
-    "typescript": "^5.3.0"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
-    "@types/node-fetch": "^2.6.9"
+    "@types/node-fetch": "^2.6.9",
+    "dotenv": "^17.2.3",
+    "typescript": "^5.3.0"
   },
-  "keywords": ["mcp", "bitrix24", "crm", "ai", "automation"],
-  "author": "Your Name",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "bitrix24",
+    "crm",
+    "ai",
+    "claude",
+    "automation",
+    "mcp-server"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/bitrix24-mcp-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/bitrix24-mcp-server/issues"
+  },
+  "homepage": "https://github.com/yourusername/bitrix24-mcp-server#readme",
+  "author": "Your Name <your.email@example.com>",
   "license": "MIT"
 }

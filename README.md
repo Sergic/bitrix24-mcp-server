@@ -86,11 +86,26 @@ A comprehensive Model Context Protocol (MCP) server for Bitrix24 CRM integration
 ## 🛠️ Installation
 
 ### Prerequisites
-- Node.js 18+ 
-- npm or yarn
+- Node.js 18+
 - Bitrix24 webhook URL
 
-### Setup
+### Quick Install (Recommended)
+
+Install directly from npm:
+
+```bash
+npm install -g bitrix24-mcp-server
+```
+
+Or use with `npx` (no installation needed):
+
+```bash
+npx bitrix24-mcp-server
+```
+
+### Development Setup
+
+For local development or customization:
 
 1. **Clone and install dependencies:**
 ```bash
@@ -99,18 +114,12 @@ cd bitrix24-mcp-server
 npm install
 ```
 
-2. **Configure environment:**
-```bash
-cp .env.example .env
-# Edit .env with your Bitrix24 webhook URL
-```
-
-3. **Build the project:**
+2. **Build the project:**
 ```bash
 npm run build
 ```
 
-4. **Test the connection:**
+3. **Test the connection:**
 ```bash
 npm test
 ```
@@ -137,7 +146,11 @@ LOG_LEVEL=info
 
 ## 🔧 Claude Desktop Integration
 
-Add the following to your Claude Desktop configuration file:
+### Option 1: NPM Package (Recommended)
+
+The easiest way - no manual setup needed!
+
+**Claude Desktop Configuration:**
 
 **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
 **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
@@ -146,8 +159,8 @@ Add the following to your Claude Desktop configuration file:
 {
   "mcpServers": {
     "bitrix24": {
-      "command": "node",
-      "args": ["/path/to/your/bitrix24-mcp-server/build/index.js"],
+      "command": "npx",
+      "args": ["-y", "bitrix24-mcp-server"],
       "env": {
         "BITRIX24_WEBHOOK_URL": "https://your-domain.bitrix24.com/rest/USER_ID/WEBHOOK_CODE/"
       }
@@ -156,9 +169,97 @@ Add the following to your Claude Desktop configuration file:
 }
 ```
 
+**Advantages:**
+- ✅ No manual installation needed
+- ✅ Automatic updates with `npx -y`
+- ✅ Works across all machines
+- ✅ No path management
+
+### Option 2: Global Installation
+
+Install once, use everywhere:
+
+```bash
+npm install -g bitrix24-mcp-server
+```
+
+**Claude Desktop Configuration:**
+
+```json
+{
+  "mcpServers": {
+    "bitrix24": {
+      "command": "bitrix24-mcp-server",
+      "env": {
+        "BITRIX24_WEBHOOK_URL": "https://your-domain.bitrix24.com/rest/USER_ID/WEBHOOK_CODE/"
+      }
+    }
+  }
+}
+```
+
+### Option 3: Local Development
+
+For developers working on the package:
+
+```json
+{
+  "mcpServers": {
+    "bitrix24": {
+      "command": "node",
+      "args": ["/Users/vic/opengit/bitrix24-mcp-server/build/index.js"],
+      "env": {
+        "BITRIX24_WEBHOOK_URL": "https://your-domain.bitrix24.com/rest/USER_ID/WEBHOOK_CODE/"
+      }
+    }
+  }
+}
+```
+
+### Alternative: HTTP Streamable Transport
+
+For cloud deployment and multiple clients, see [HTTP_STREAMABLE_GUIDE.md](HTTP_STREAMABLE_GUIDE.md).
+
+## 🔗 Integration with n8n
+
+This MCP server includes a **REST API wrapper** for easy integration with n8n!
+
+### Quick Start with n8n
+
+```bash
+# Start the REST API server for n8n
+npm run start:n8n
+```
+
+The server will run on `http://localhost:3001` with the following endpoints:
+
+- `POST /contacts` - Create contact
+- `GET /contacts` - List contacts
+- `POST /deals` - Create deal
+- `GET /deals` - List deals
+- `POST /tasks` - Create task
+- `GET /analytics/user-performance` - Get user analytics
+- And many more...
+
+**See `N8N_INTEGRATION.md` for complete integration guide!**
+
+### Quick n8n Example
+
+In n8n, add an **HTTP Request** node:
+- **Method:** POST
+- **URL:** `http://localhost:3001/contacts`
+- **Body:**
+```json
+{
+  "NAME": "John",
+  "LAST_NAME": "Doe",
+  "EMAIL": [{"VALUE": "john@example.com", "VALUE_TYPE": "WORK"}]
+}
+```
+
 ## 📖 Usage Examples
 
-### Creating a Contact
+### Creating a Contact (Claude Desktop)
 ```
 Create a new contact named John Smith with email john@example.com and phone +39 123 456 789
 ```

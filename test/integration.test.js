@@ -49,6 +49,7 @@ async function testIntegration() {
     const taskId = await bitrix24Client.createTask({
       TITLE: 'Test Task - MCP Server',
       DESCRIPTION: 'This is a test task created by the MCP server',
+      RESPONSIBLE_ID: user.ID,
       PRIORITY: '1',
       UF_CRM_TASK: [`C_${contactId}`, `D_${dealId}`]
     });
