@@ -1313,7 +1313,12 @@ export async function executeToolCall(name: string, args: any): Promise<any> {
         return { success: true, updated: taskUpdated, message: `Task ${args.id} updated successfully` };
 
       case 'bitrix24_search_crm':
-        const searchResults = await bitrix24Client.searchCRM(args.query, args.entityTypes);
+        // Determine if query is a phone number (starts with + or contains only digits and +)
+        const isPhone = /^\+?[\d\s\-\(\)]+$/.test(args.query.trim());
+        const entityTypes = args.entityTypes || ['contact', 'company', 'deal', 'lead'];
+        const searchResults = isPhone 
+          ? await bitrix24Client.searchCRMByPhone(args.query, entityTypes)
+          : await bitrix24Client.searchCRM(args.query, entityTypes);
         return { success: true, results: searchResults };
 
       case 'bitrix24_validate_webhook':

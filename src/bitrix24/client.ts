@@ -210,6 +210,11 @@ export class Bitrix24Client {
             Object.entries(value).forEach(([filterKey, filterValue]) => {
               body.append(`filter[${filterKey}]`, String(filterValue));
             });
+          } else if (key === 'values' && Array.isArray(value)) {
+            // Handle values array parameter specially (for crm.duplicate.findbycomm)
+            value.forEach((item, index) => {
+              body.append(`values[${index}]`, String(item));
+            });
           } else if (typeof value === 'object' && value !== null) {
             body.append(key, JSON.stringify(value));
           } else if (value !== undefined && value !== null) {
@@ -683,11 +688,53 @@ export class Bitrix24Client {
   }
 
   async searchCRM(query: string, entityTypes: string[] = ['contact', 'company', 'deal', 'lead']): Promise<any> {
-    return await this.makeRequest('crm.duplicate.findbycomm', {
-      entity_type: entityTypes.join(','),
+    // Convert entity types to Bitrix24 format (LEAD, CONTACT, COMPANY)
+    // If multiple types or 'deal' is included, don't specify entity_type (search all)
+    const entityTypeMap: Record<string, string> = {
+      'lead': 'LEAD',
+      'contact': 'CONTACT',
+      'company': 'COMPANY'
+    };
+    
+    // Filter out 'deal' as it's not supported by crm.duplicate.findbycomm
+    const validTypes = entityTypes.filter(t => t !== 'deal').map(t => entityTypeMap[t.toLowerCase()]).filter(Boolean);
+    
+    const params: Record<string, any> = {
       type: 'EMAIL',
       values: [query]
-    });
+    };
+    
+    // Only set entity_type if exactly one type is specified
+    if (validTypes.length === 1) {
+      params.entity_type = validTypes[0];
+    }
+    
+    return await this.makeRequest('crm.duplicate.findbycomm', params);
+  }
+
+  async searchCRMByPhone(phone: string, entityTypes: string[] = ['contact', 'company', 'deal', 'lead']): Promise<any> {
+    // Convert entity types to Bitrix24 format (LEAD, CONTACT, COMPANY)
+    // If multiple types or 'deal' is included, don't specify entity_type (search all)
+    const entityTypeMap: Record<string, string> = {
+      'lead': 'LEAD',
+      'contact': 'CONTACT',
+      'company': 'COMPANY'
+    };
+    
+    // Filter out 'deal' as it's not supported by crm.duplicate.findbycomm
+    const validTypes = entityTypes.filter(t => t !== 'deal').map(t => entityTypeMap[t.toLowerCase()]).filter(Boolean);
+    
+    const params: Record<string, any> = {
+      type: 'PHONE',
+      values: [phone]
+    };
+    
+    // Only set entity_type if exactly one type is specified
+    if (validTypes.length === 1) {
+      params.entity_type = validTypes[0];
+    }
+    
+    return await this.makeRequest('crm.duplicate.findbycomm', params);
   }
 
   async validateWebhook(): Promise<boolean> {

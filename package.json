@@ -16,6 +16,8 @@
     "start:http": "node http-streamable-server.js",
     "start:n8n": "node n8n-api-server.js",
     "test": "node test/integration.test.js",
+    "test:unit": "node test/unit/search-crm.test.js",
+    "test:all": "npm run test:unit && npm run test",
     "prepublishOnly": "npm run build",
     "azure:start": "node http-streamable-server.js"
   },
