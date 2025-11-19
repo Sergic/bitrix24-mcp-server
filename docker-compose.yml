@@ -5,8 +5,12 @@ services:
       dockerfile: Dockerfile
     container_name: bitrix24-mcp-server
     restart: unless-stopped
+    # Порт привязки настраивается через BIND_ADDRESS (по умолчанию 127.0.0.1 для безопасности)
+    # Варианты:
+    #   - BIND_ADDRESS=127.0.0.1 (только localhost, рекомендуется для nginx)
+    #   - BIND_ADDRESS=0.0.0.0 (все интерфейсы, для прямого доступа извне)
     ports:
-      - "${PORT:-3000}:${PORT:-3000}"
+      - "${BIND_ADDRESS:-127.0.0.1}:${PORT:-3000}:${PORT:-3000}"
     environment:
       # Обязательная переменная - URL вебхука Bitrix24
       - BITRIX24_WEBHOOK_URL=${BITRIX24_WEBHOOK_URL}

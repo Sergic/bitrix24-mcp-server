@@ -99,9 +99,11 @@ jspm_packages/
 
 # Deployment files and packages
 *.zip
-deployment/
+/deployment/
 deploy-package/
 package-deploy.json
+# Но не игнорируем документацию по deployment
+!docs/deployment/
 
 # Azure deployment files (keeping web.config as it's needed)
 .deployment
