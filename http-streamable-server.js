@@ -141,12 +141,27 @@ const httpServer = createServer(async (req, res) => {
 
   // Root endpoint - status page
   if (req.method === 'GET' && req.url === '/') {
-    res.writeHead(200, { 'Content-Type': 'text/html' });
+    // Get the actual host from request headers
+    const host = req.headers.host || `localhost:${PORT}`;
+    // Determine protocol: check x-forwarded-proto first (for proxies), then socket encryption
+    let protocol = 'http';
+    if (req.headers['x-forwarded-proto']) {
+      protocol = req.headers['x-forwarded-proto'].split(',')[0].trim();
+    } else if (req.socket && req.socket.encrypted) {
+      protocol = 'https';
+    } else if (req.connection && req.connection.encrypted) {
+      protocol = 'https';
+    }
+    const baseUrl = `${protocol}://${host}`;
+    const endpointUrl = `${baseUrl}${MCP_ENDPOINT}`;
+    
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(`
       <!DOCTYPE html>
       <html>
       <head>
         <title>Bitrix24 MCP Server - HTTP Streamable</title>
+        <meta charset="utf-8">
         <style>
           body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
           .container { max-width: 900px; margin: 0 auto; }
@@ -159,15 +174,15 @@ const httpServer = createServer(async (req, res) => {
       </head>
       <body>
         <div class="container">
-          <h1>🚀 Bitrix24 MCP Server</h1>
+          <h1>Bitrix24 MCP Server</h1>
           <div class="status">
-            <h2>✅ Server Running</h2>
+            <h2>Server Running</h2>
             <p><strong>Protocol:</strong> MCP HTTP Streamable (2025-03-26)</p>
-            <p><strong>Endpoint:</strong> <code>http://localhost:${PORT}${MCP_ENDPOINT}</code></p>
+            <p><strong>Endpoint:</strong> <code>${endpointUrl}</code></p>
           </div>
 
           <div class="info">
-            <h3>📋 Server Information</h3>
+            <h3>Server Information</h3>
             <ul>
               <li><strong>Version:</strong> 1.0.0</li>
               <li><strong>Runtime:</strong> Node.js ${process.version}</li>
@@ -177,7 +192,7 @@ const httpServer = createServer(async (req, res) => {
           </div>
 
           <div class="info">
-            <h3>🔧 API Endpoints</h3>
+            <h3>API Endpoints</h3>
             <ul>
               <li><code>GET /</code> - This status page</li>
               <li><code>GET /health</code> - Health check endpoint</li>
@@ -187,8 +202,8 @@ const httpServer = createServer(async (req, res) => {
           </div>
 
           <div class="info">
-            <h3>📖 Usage Example - List Tools</h3>
-            <pre>curl -X POST http://localhost:${PORT}${MCP_ENDPOINT} \\
+            <h3>Usage Example - List Tools</h3>
+            <pre>curl -X POST ${endpointUrl} \\
   -H "Content-Type: application/json" \\
   -H "Accept: application/json" \\
   -d '{
@@ -199,8 +214,8 @@ const httpServer = createServer(async (req, res) => {
           </div>
 
           <div class="info">
-            <h3>📖 Usage Example - Call Tool</h3>
-            <pre>curl -X POST http://localhost:${PORT}${MCP_ENDPOINT} \\
+            <h3>Usage Example - Call Tool</h3>
+            <pre>curl -X POST ${endpointUrl} \\
   -H "Content-Type: application/json" \\
   -H "Accept: application/json" \\
   -d '{
@@ -217,20 +232,20 @@ const httpServer = createServer(async (req, res) => {
           </div>
 
           <div class="info">
-            <h3>🛠 Available Tools (${allTools.length})</h3>
+            <h3>Available Tools (${allTools.length})</h3>
             <div class="tool-list">
               ${allTools.map(tool => `<div style="margin: 5px 0;"><code>${tool.name}</code> - ${tool.description}</div>`).join('')}
             </div>
           </div>
 
           <div class="info">
-            <h3>🔗 MCP Client Configuration</h3>
+            <h3>MCP Client Configuration</h3>
             <p>To use this server with MCP-compatible clients (Claude Desktop, etc.), configure:</p>
             <pre>{
   "mcpServers": {
     "bitrix24": {
       "transport": "http",
-      "url": "http://localhost:${PORT}${MCP_ENDPOINT}"
+      "url": "${endpointUrl}"
     }
   }
 }</pre>
