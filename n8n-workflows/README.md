@@ -168,7 +168,7 @@ AI Agent автоматически выбирает и использует н�
 ## 📚 Дополнительные ресурсы
 
 - [Полный гайд по настройке](../N8N_MCP_SETUP_GUIDE.md)
-- [HTTP Streamable документация](../HTTP_STREAMABLE_GUIDE.md)
+- [HTTP Streamable документация](../docs/deployment/HTTP_STREAMABLE_GUIDE.md)
 - [Quick Start](../QUICK_START_N8N.md)
 
 ## 🤝 Вклад

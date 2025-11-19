@@ -8,7 +8,7 @@ A comprehensive Model Context Protocol (MCP) server for Bitrix24 CRM integration
 - ✅ **Full Docker Compose integration** - Easy deployment on Linux servers
 - ✅ **Dynamic port configuration** - Configure any port via `PORT` environment variable
 - ✅ **Production-ready setup** - Health checks, automatic restarts, isolated environment
-- ✅ **Comprehensive documentation** - See [DOCKER_COMPOSE_GUIDE.md](DOCKER_COMPOSE_GUIDE.md)
+- ✅ **Comprehensive documentation** - See [DOCKER_COMPOSE_GUIDE.md](docs/deployment/DOCKER_COMPOSE_GUIDE.md)
 
 **Quick Start with Docker:**
 ```bash
@@ -135,8 +135,9 @@ curl http://localhost:3000/health
 ```
 
 **📖 Documentation:**
-- [DOCKER_COMPOSE_GUIDE.md](DOCKER_COMPOSE_GUIDE.md) - Comprehensive Docker Compose guide
-- [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md) - Quick reference for Docker deployment
+- [Docker Compose Guide](docs/deployment/DOCKER_COMPOSE_GUIDE.md) - Comprehensive Docker Compose guide
+- [Docker Deployment](docs/deployment/DOCKER_DEPLOYMENT.md) - Quick reference for Docker deployment
+- [Full Documentation Index](docs/README.md) - Complete documentation structure
 
 **Key Features:**
 - ✅ No Node.js installation required
@@ -310,7 +311,7 @@ docker-compose up -d
 - MCP endpoint: `http://your-server:3000/mcp`
 - Status page: `http://your-server:3000/`
 
-**📖 Full guide:** See [DOCKER_COMPOSE_GUIDE.md](DOCKER_COMPOSE_GUIDE.md)
+**📖 Full guide:** See [DOCKER_COMPOSE_GUIDE.md](docs/deployment/DOCKER_COMPOSE_GUIDE.md)
 
 **Advantages:**
 - ✅ No Node.js installation required
@@ -321,7 +322,7 @@ docker-compose up -d
 
 ### Alternative: HTTP Streamable Transport
 
-For cloud deployment and multiple clients, see [HTTP_STREAMABLE_GUIDE.md](HTTP_STREAMABLE_GUIDE.md).
+For cloud deployment and multiple clients, see [HTTP_STREAMABLE_GUIDE.md](docs/deployment/HTTP_STREAMABLE_GUIDE.md).
 
 ## 🔗 Integration with n8n
 
@@ -475,6 +476,46 @@ case 'bitrix24_new_action':
 
 ### Debug Mode
 Set `NODE_ENV=development` and `LOG_LEVEL=debug` in your `.env` file for detailed logging.
+
+## 📚 Documentation
+
+All documentation is organized in the `docs/` directory:
+
+### 📖 Quick Links
+- **[Documentation Index](docs/README.md)** - Complete documentation structure
+- **[Installation Guide](docs/installation/INSTALLATION_GUIDE.md)** - Installation instructions
+- **[Docker Deployment](docs/deployment/DOCKER_DEPLOYMENT.md)** - Docker Compose quick start
+- **[Troubleshooting](docs/troubleshooting/TROUBLESHOOTING_GUIDE.md)** - Common issues and solutions
+
+### 📁 Documentation Structure
+
+```
+docs/
+├── README.md                    # Documentation index
+├── installation/               # Installation guides
+│   └── INSTALLATION_GUIDE.md
+├── deployment/                 # Deployment guides
+│   ├── DOCKER_COMPOSE_GUIDE.md
+│   ├── DOCKER_DEPLOYMENT.md
+│   ├── HTTP_STREAMABLE_GUIDE.md
+│   ├── AZURE_DEPLOYMENT_GUIDE.md
+│   └── ...
+├── guides/                     # User guides
+│   ├── BITRIX24_BUSINESS_USER_GUIDE.md
+│   ├── N8N_MCP_SETUP_GUIDE.md
+│   ├── SALES_MONITORING_GUIDE.md
+│   └── ...
+├── api/                        # API documentation
+│   ├── documentation.md
+│   └── BITRIXDOCUMENTATIONSCRAPED.MD
+├── troubleshooting/            # Troubleshooting guides
+│   ├── TROUBLESHOOTING_GUIDE.md
+│   └── ...
+└── archive/                    # Historical documentation
+    └── ...
+```
+
+**See [docs/README.md](docs/README.md) for complete documentation index.**
 
 ## 📝 API Reference
 

@@ -232,7 +232,7 @@ LOG_LEVEL=debug
 ```
 
 ### Getting Help
-1. Check `TROUBLESHOOTING_GUIDE.md`
+1. Check [TROUBLESHOOTING_GUIDE.md](../troubleshooting/TROUBLESHOOTING_GUIDE.md)
 2. Review error messages carefully
 3. Test each component individually
 4. Check GitHub issues for similar problems

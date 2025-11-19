@@ -26,7 +26,7 @@ docker-compose up -d
 curl http://localhost:3000/health
 ```
 
-**📖 Full guide:** See [DOCKER_COMPOSE_GUIDE.md](DOCKER_COMPOSE_GUIDE.md)
+**📖 Full guide:** See [DOCKER_COMPOSE_GUIDE.md](docs/deployment/DOCKER_COMPOSE_GUIDE.md)
 
 **Advantages:**
 - ✅ No Node.js installation required
@@ -60,7 +60,7 @@ Double-click: install-simple.bat
 
 ### 🛠️ **Manual Installation**
 ```
-See: INSTALLATION_GUIDE.md
+See: docs/installation/INSTALLATION_GUIDE.md
 ```
 **Perfect for:** Advanced users, custom setups
 - Full control over each step
@@ -89,13 +89,13 @@ See: INSTALLATION_GUIDE.md
 - **Windows 10/11**
 - **Node.js 18+** ([Download here](https://nodejs.org/))
 - **Claude Desktop** ([Download here](https://claude.ai/download))
-- **Bitrix24 webhook URL** (see INSTALLATION_GUIDE.md for setup)
+- **Bitrix24 webhook URL** (see [INSTALLATION_GUIDE.md](docs/installation/INSTALLATION_GUIDE.md) for setup)
 
 ## 🆘 Need Help?
 
-- **Installation issues:** See `INSTALLATION_GUIDE.md`
-- **Bitrix24 setup:** See `SETUP.md`
-- **Troubleshooting:** See `TROUBLESHOOTING_GUIDE.md`
+- **Installation issues:** See [INSTALLATION_GUIDE.md](docs/installation/INSTALLATION_GUIDE.md)
+- **Bitrix24 setup:** See [SETUP.md](SETUP.md)
+- **Troubleshooting:** See [TROUBLESHOOTING_GUIDE.md](docs/troubleshooting/TROUBLESHOOTING_GUIDE.md)
 
 ---
 

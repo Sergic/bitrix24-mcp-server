@@ -39,7 +39,7 @@ curl http://localhost:3000/health
 docker-compose logs -f
 ```
 
-**📖 Full Docker Compose guide:** See [DOCKER_COMPOSE_GUIDE.md](DOCKER_COMPOSE_GUIDE.md)
+**📖 Full Docker Compose guide:** See [DOCKER_COMPOSE_GUIDE.md](docs/deployment/DOCKER_COMPOSE_GUIDE.md)
 
 **Key Features:**
 - ✅ No Node.js installation required
@@ -213,7 +213,7 @@ bitrix24-mcp-server/
 ├── Dockerfile             # Docker image definition
 ├── package.json           # Project configuration
 ├── tsconfig.json          # TypeScript configuration
-├── DOCKER_COMPOSE_GUIDE.md # Docker Compose documentation
+├── docs/                    # Documentation (see docs/README.md)
 └── README.md              # Full documentation
 ```
 

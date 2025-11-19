@@ -678,7 +678,7 @@ curl http://localhost:3000/health
 - [MCP Specification](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports)
 - [n8n Documentation](https://docs.n8n.io)
 - [Bitrix24 API](https://dev.bitrix24.com/)
-- [HTTP Streamable Guide](./HTTP_STREAMABLE_GUIDE.md)
+- [HTTP Streamable Guide](../deployment/HTTP_STREAMABLE_GUIDE.md)
 - [Quick Start для n8n](./QUICK_START_N8N.md)
 
 ---
