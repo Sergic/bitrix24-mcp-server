@@ -2,6 +2,22 @@
 
 A comprehensive Model Context Protocol (MCP) server for Bitrix24 CRM integration, enabling AI agents to seamlessly interact with your Bitrix24 instance through a powerful set of tools.
 
+## 🆕 Recent Updates
+
+### Docker Compose Support (Latest)
+- ✅ **Full Docker Compose integration** - Easy deployment on Linux servers
+- ✅ **Dynamic port configuration** - Configure any port via `PORT` environment variable
+- ✅ **Production-ready setup** - Health checks, automatic restarts, isolated environment
+- ✅ **Comprehensive documentation** - See [DOCKER_COMPOSE_GUIDE.md](DOCKER_COMPOSE_GUIDE.md)
+
+**Quick Start with Docker:**
+```bash
+git clone git@github.com:Sergic/bitrix24-mcp-server.git
+cd bitrix24-mcp-server
+echo "BITRIX24_WEBHOOK_URL=your_webhook_url" > .env
+docker-compose up -d
+```
+
 ## 🚀 Features
 
 - **Complete CRM Management**: Create, read, update, and list contacts, deals, and tasks
@@ -86,10 +102,50 @@ A comprehensive Model Context Protocol (MCP) server for Bitrix24 CRM integration
 ## 🛠️ Installation
 
 ### Prerequisites
-- Node.js 18+
+- Node.js 18+ (for local installation)
+- Docker & Docker Compose (for Docker installation)
 - Bitrix24 webhook URL
 
-### Quick Install (Recommended)
+### 🐳 Docker Compose Installation (Recommended for Production)
+
+The easiest way to deploy on Linux servers:
+
+1. **Clone the repository:**
+```bash
+git clone git@github.com:Sergic/bitrix24-mcp-server.git
+cd bitrix24-mcp-server
+```
+
+2. **Create `.env` file:**
+```bash
+BITRIX24_WEBHOOK_URL=https://your-domain.bitrix24.com/rest/USER_ID/WEBHOOK_CODE/
+PORT=3000
+NODE_ENV=production
+LOG_LEVEL=info
+```
+
+3. **Start with Docker Compose:**
+```bash
+docker-compose up -d
+```
+
+4. **Verify it's running:**
+```bash
+curl http://localhost:3000/health
+```
+
+**📖 Documentation:**
+- [DOCKER_COMPOSE_GUIDE.md](DOCKER_COMPOSE_GUIDE.md) - Comprehensive Docker Compose guide
+- [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md) - Quick reference for Docker deployment
+
+**Key Features:**
+- ✅ No Node.js installation required
+- ✅ Automatic health checks
+- ✅ Easy port configuration via `PORT` environment variable
+- ✅ Production-ready setup
+- ✅ Automatic restarts
+
+### 📦 NPM Installation (For Local Development)
 
 Install directly from npm:
 
@@ -103,7 +159,7 @@ Or use with `npx` (no installation needed):
 npx bitrix24-mcp-server
 ```
 
-### Development Setup
+### 🔧 Development Setup
 
 For local development or customization:
 
@@ -131,10 +187,20 @@ npm test
 Create a `.env` file with the following variables:
 
 ```env
+# Required: Bitrix24 webhook URL
 BITRIX24_WEBHOOK_URL=https://your-domain.bitrix24.com/rest/USER_ID/WEBHOOK_CODE/
-NODE_ENV=development
+
+# Optional: Server port (default: 3000)
+PORT=3000
+
+# Optional: Environment (default: development)
+NODE_ENV=production
+
+# Optional: Log level (default: info)
 LOG_LEVEL=info
 ```
+
+**Note:** When using Docker Compose, the `PORT` variable controls both the internal and external port mapping. You can use any available port (e.g., `PORT=8080`).
 
 ### Bitrix24 Webhook Setup
 
@@ -215,6 +281,43 @@ For developers working on the package:
   }
 }
 ```
+
+### Option 4: Docker Compose (Production Server)
+
+For deploying on Linux servers or production environments:
+
+**1. Clone and configure:**
+```bash
+git clone git@github.com:Sergic/bitrix24-mcp-server.git
+cd bitrix24-mcp-server
+```
+
+**2. Create `.env` file:**
+```env
+BITRIX24_WEBHOOK_URL=https://your-domain.bitrix24.com/rest/USER_ID/WEBHOOK_CODE/
+PORT=3000
+NODE_ENV=production
+LOG_LEVEL=info
+```
+
+**3. Start the server:**
+```bash
+docker-compose up -d
+```
+
+**4. Access the server:**
+- Health check: `http://your-server:3000/health`
+- MCP endpoint: `http://your-server:3000/mcp`
+- Status page: `http://your-server:3000/`
+
+**📖 Full guide:** See [DOCKER_COMPOSE_GUIDE.md](DOCKER_COMPOSE_GUIDE.md)
+
+**Advantages:**
+- ✅ No Node.js installation required
+- ✅ Isolated environment
+- ✅ Easy port configuration
+- ✅ Automatic health checks
+- ✅ Production-ready
 
 ### Alternative: HTTP Streamable Transport
 

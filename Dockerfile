@@ -41,12 +41,13 @@ RUN addgroup -g 1001 -S nodejs && \
 # Switch to non-root user
 USER nodejs
 
-# Expose port (Coolify will map this automatically)
+# Expose port (default 3000, but can be overridden via PORT env var)
+# Note: EXPOSE is just metadata, actual port is controlled by PORT env var
 EXPOSE 3000
 
-# Health check
+# Health check (uses PORT env var, defaults to 3000)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); })"
+  CMD node -e "const port = process.env.PORT || '3000'; require('http').get('http://localhost:' + port + '/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); })"
 
 # Start the HTTP Streamable server
 CMD ["node", "http-streamable-server.js"]

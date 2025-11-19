@@ -2,7 +2,42 @@
 
 Choose your installation method:
 
-## 📦 Installation Options
+## 🐳 Docker Compose (Recommended for Linux Servers)
+
+**Perfect for:** Production deployments, Linux servers, cloud hosting
+
+```bash
+# 1. Clone repository
+git clone git@github.com:Sergic/bitrix24-mcp-server.git
+cd bitrix24-mcp-server
+
+# 2. Create .env file
+cat > .env << EOF
+BITRIX24_WEBHOOK_URL=https://your-domain.bitrix24.com/rest/USER_ID/WEBHOOK_CODE/
+PORT=3000
+NODE_ENV=production
+LOG_LEVEL=info
+EOF
+
+# 3. Start server
+docker-compose up -d
+
+# 4. Verify
+curl http://localhost:3000/health
+```
+
+**📖 Full guide:** See [DOCKER_COMPOSE_GUIDE.md](DOCKER_COMPOSE_GUIDE.md)
+
+**Advantages:**
+- ✅ No Node.js installation required
+- ✅ Isolated environment
+- ✅ Configurable port (set `PORT` in `.env`)
+- ✅ Automatic health checks
+- ✅ Production-ready
+
+---
+
+## 📦 Installation Options (Windows/macOS)
 
 ### 🎯 **Recommended: Full Automated Setup**
 ```

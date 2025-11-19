@@ -4,6 +4,53 @@
 
 Your Bitrix24 MCP Server is now ready! Here's how to get it running:
 
+## 🐳 Docker Compose Setup (Recommended for Production)
+
+For Linux servers and production deployments:
+
+### 1. Clone and Configure
+```bash
+git clone git@github.com:Sergic/bitrix24-mcp-server.git
+cd bitrix24-mcp-server
+```
+
+### 2. Create `.env` file
+```bash
+BITRIX24_WEBHOOK_URL=https://your-domain.bitrix24.com/rest/USER_ID/WEBHOOK_CODE/
+PORT=3000
+NODE_ENV=production
+LOG_LEVEL=info
+```
+
+### 3. Start with Docker Compose
+```bash
+docker-compose up -d
+```
+
+### 4. Verify it's running
+```bash
+# Check status
+docker-compose ps
+
+# Check health
+curl http://localhost:3000/health
+
+# View logs
+docker-compose logs -f
+```
+
+**📖 Full Docker Compose guide:** See [DOCKER_COMPOSE_GUIDE.md](DOCKER_COMPOSE_GUIDE.md)
+
+**Key Features:**
+- ✅ No Node.js installation required
+- ✅ Configurable port via `PORT` environment variable
+- ✅ Automatic health checks
+- ✅ Production-ready setup
+
+---
+
+## 💻 Local Development Setup
+
 ### 1. Verify Installation
 ```bash
 # Check if the server starts correctly
@@ -100,6 +147,7 @@ You should see all 15 tools listed.
 
 ## 🛠️ Development Commands
 
+### Local Development
 ```bash
 # Install dependencies
 npm install
@@ -113,8 +161,32 @@ npm run dev
 # Start the server
 npm start
 
+# Start HTTP streamable server
+npm run start:http
+
 # Run integration tests
 npm test
+```
+
+### Docker Commands
+```bash
+# Start server
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop server
+docker-compose down
+
+# Restart server
+docker-compose restart
+
+# Rebuild and start
+docker-compose up -d --build
+
+# Check status
+docker-compose ps
 ```
 
 ## 🔒 Security Notes
@@ -137,8 +209,11 @@ bitrix24-mcp-server/
 ├── build/                 # Compiled JavaScript (generated)
 ├── test/                  # Integration tests
 ├── .env                   # Environment variables (DO NOT COMMIT)
+├── docker-compose.yml     # Docker Compose configuration
+├── Dockerfile             # Docker image definition
 ├── package.json           # Project configuration
 ├── tsconfig.json          # TypeScript configuration
+├── DOCKER_COMPOSE_GUIDE.md # Docker Compose documentation
 └── README.md              # Full documentation
 ```
 
