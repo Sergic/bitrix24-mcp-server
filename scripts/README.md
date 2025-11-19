@@ -15,6 +15,19 @@ scripts/
 
 Scripts for testing various Bitrix24 API endpoints and functionality:
 
+### Docker Deployment Test
+- `test-docker-deployment.sh` - **Comprehensive Docker Compose deployment test**
+  - Tests container startup and health checks
+  - Validates port configuration (default and custom ports)
+  - Tests health and MCP endpoints
+  - Automatically cleans up after testing
+
+**Usage:**
+```bash
+./scripts/test/test-docker-deployment.sh
+```
+
+### API Test Scripts
 - `test-*.js`, `test-*.mjs`, `test-*.cjs` - Various test scripts
 - `test-contacts.mjs` - Test contact operations
 - `test-deals-2025.mjs` - Test deal operations
