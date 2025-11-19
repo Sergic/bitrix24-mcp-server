@@ -206,15 +206,27 @@ bitrix24-mcp-server/
 │   ├── utils/             # Utility functions
 │   ├── config/            # Configuration management
 │   └── index.ts           # Main MCP server
-├── build/                 # Compiled JavaScript (generated)
-├── test/                  # Integration tests
-├── .env                   # Environment variables (DO NOT COMMIT)
-├── docker-compose.yml     # Docker Compose configuration
-├── Dockerfile             # Docker image definition
-├── package.json           # Project configuration
-├── tsconfig.json          # TypeScript configuration
-├── docs/                    # Documentation (see docs/README.md)
-└── README.md              # Full documentation
+├── scripts/                # Utility scripts
+│   ├── test/              # Test scripts
+│   ├── install/           # Installation scripts
+│   └── utils/             # Utility scripts
+├── config/                 # Configuration files
+│   ├── claude/            # Claude Desktop configs
+│   └── azure/             # Azure deployment configs
+├── docs/                   # Documentation (see docs/README.md)
+├── examples/               # Example files
+├── assets/                 # Static assets
+├── n8n-workflows/         # n8n workflow examples
+├── build/                  # Compiled JavaScript (generated)
+├── test/                   # Integration tests
+├── .env                    # Environment variables (DO NOT COMMIT)
+├── docker-compose.yml      # Docker Compose configuration
+├── Dockerfile              # Docker image definition
+├── http-streamable-server.js # HTTP streamable server
+├── server.js               # Alternative server
+├── package.json            # Project configuration
+├── tsconfig.json           # TypeScript configuration
+└── README.md               # Full documentation
 ```
 
 ## 🎉 Success Indicators

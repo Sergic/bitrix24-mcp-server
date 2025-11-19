@@ -388,7 +388,7 @@ Search for all contacts and deals related to "example.com"
 ### Project Structure
 ```
 bitrix24-mcp-server/
-├── src/
+├── src/                        # TypeScript source code
 │   ├── bitrix24/
 │   │   └── client.ts          # Bitrix24 API client
 │   ├── tools/
@@ -398,11 +398,32 @@ bitrix24-mcp-server/
 │   ├── config/
 │   │   └── index.ts           # Configuration management
 │   └── index.ts               # Main MCP server
-├── test/
-│   └── integration.test.js    # Integration tests
-├── build/                     # Compiled JavaScript
+├── test/                       # Integration tests
+│   └── integration.test.js
+├── scripts/                    # Utility scripts
+│   ├── test/                  # Test scripts
+│   ├── install/               # Installation scripts (Windows)
+│   └── utils/                 # Utility scripts
+├── config/                     # Configuration files
+│   ├── claude/                # Claude Desktop configs
+│   └── azure/                 # Azure deployment configs
+├── docs/                       # Documentation
+│   ├── installation/          # Installation guides
+│   ├── deployment/           # Deployment guides
+│   ├── guides/                # User guides
+│   ├── api/                   # API documentation
+│   ├── troubleshooting/       # Troubleshooting guides
+│   └── archive/               # Historical docs
+├── examples/                  # Example files
+├── assets/                     # Static assets (icons, etc.)
+├── n8n-workflows/             # n8n workflow examples
+├── build/                     # Compiled JavaScript (generated)
+├── Dockerfile                 # Docker image definition
+├── docker-compose.yml         # Docker Compose configuration
 ├── package.json
 ├── tsconfig.json
+├── http-streamable-server.js  # HTTP streamable server
+├── server.js                  # Alternative server implementation
 └── README.md
 ```
 
