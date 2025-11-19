@@ -2,7 +2,7 @@
 node_modules/
 npm-debug.log
 yarn-error.log
-package-lock.json
+# package-lock.json is needed for npm ci
 
 # Build output
 build/
@@ -52,8 +52,7 @@ temp/
 
 # Development files
 nodemon.json
-tsconfig.json
-src/
+# tsconfig.json and src/ are needed for building TypeScript
 
 # Azure specific
 .deployment

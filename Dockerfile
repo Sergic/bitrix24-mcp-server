@@ -4,14 +4,16 @@ FROM node:20-alpine AS builder
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy package files (including package-lock.json)
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install all dependencies (including dev for building TypeScript)
+RUN npm ci
 
-# Copy source code
-COPY . .
+# Copy TypeScript config and source code (needed for build)
+COPY tsconfig.json ./
+COPY src/ ./src/
+COPY http-streamable-server.js ./
 
 # Build TypeScript
 RUN npm run build
@@ -21,11 +23,11 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files (including package-lock.json)
 COPY package*.json ./
 
 # Install production dependencies only
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci --omit=dev && npm cache clean --force
 
 # Copy built files from builder
 COPY --from=builder /app/build ./build
