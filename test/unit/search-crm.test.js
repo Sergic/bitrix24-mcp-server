@@ -75,11 +75,11 @@ function runTests() {
   // Test 1: Phone number detection
   console.log('\n📱 Testing Phone Number Detection:');
   test('Should detect phone with + prefix', () => {
-    assert(isPhoneNumber('+380971518745'), 'Should detect +380971518745 as phone');
+    assert(isPhoneNumber('+15551234567'), 'Should detect +15551234567 as phone');
   });
   
   test('Should detect phone without + prefix', () => {
-    assert(isPhoneNumber('380971518745'), 'Should detect 380971518745 as phone');
+    assert(isPhoneNumber('15551234567'), 'Should detect 15551234567 as phone');
   });
   
   test('Should detect phone with spaces', () => {
@@ -156,10 +156,10 @@ function runTests() {
   // Test 3: Parameter building
   console.log('\n⚙️  Testing Parameter Building:');
   test('Should build phone search params with single entity type', () => {
-    const params = buildSearchParams('+380971518745', ['lead'], true);
+    const params = buildSearchParams('+15551234567', ['lead'], true);
     assertEqual(params, {
       type: 'PHONE',
-      values: ['+380971518745'],
+      values: ['+15551234567'],
       entity_type: 'LEAD'
     }, 'Should include entity_type for single type');
   });
@@ -182,20 +182,20 @@ function runTests() {
   });
   
   test('Should build params with entity_type when deal is included but one valid type remains', () => {
-    const params = buildSearchParams('+380971518745', ['lead', 'deal'], true);
+    const params = buildSearchParams('+15551234567', ['lead', 'deal'], true);
     // When deal is filtered out, only 'lead' remains, so entity_type should be set
     assertEqual(params, {
       type: 'PHONE',
-      values: ['+380971518745'],
+      values: ['+15551234567'],
       entity_type: 'LEAD'
     }, 'Should include entity_type when only one valid type remains after filtering deal');
   });
   
   test('Should build params without entity_type when deal is included with multiple valid types', () => {
-    const params = buildSearchParams('+380971518745', ['lead', 'deal', 'contact'], true);
+    const params = buildSearchParams('+15551234567', ['lead', 'deal', 'contact'], true);
     assertEqual(params, {
       type: 'PHONE',
-      values: ['+380971518745']
+      values: ['+15551234567']
     }, 'Should NOT include entity_type when multiple valid types remain after filtering deal');
   });
   
@@ -208,18 +208,18 @@ function runTests() {
   });
   
   test('Should build params without entity_type when only deal is specified', () => {
-    const params = buildSearchParams('+380971518745', ['deal'], true);
+    const params = buildSearchParams('+15551234567', ['deal'], true);
     assertEqual(params, {
       type: 'PHONE',
-      values: ['+380971518745']
+      values: ['+15551234567']
     }, 'Should NOT include entity_type when only deal is specified');
   });
   
   // Test 4: Integration scenarios
   console.log('\n🔗 Testing Integration Scenarios:');
   test('Should handle phone search for leads only', () => {
-    const isPhone = isPhoneNumber('+380971518745');
-    const params = buildSearchParams('+380971518745', ['lead'], isPhone);
+    const isPhone = isPhoneNumber('+15551234567');
+    const params = buildSearchParams('+15551234567', ['lead'], isPhone);
     assert(params.type === 'PHONE', 'Should use PHONE type');
     assert(params.entity_type === 'LEAD', 'Should filter to LEAD only');
   });
@@ -232,8 +232,8 @@ function runTests() {
   });
   
   test('Should handle phone search with deal in list', () => {
-    const isPhone = isPhoneNumber('+380971518745');
-    const params = buildSearchParams('+380971518745', ['lead', 'deal', 'contact'], isPhone);
+    const isPhone = isPhoneNumber('+15551234567');
+    const params = buildSearchParams('+15551234567', ['lead', 'deal', 'contact'], isPhone);
     assert(params.type === 'PHONE', 'Should use PHONE type');
     assert(params.entity_type === undefined, 'Should search all types when deal is included');
   });

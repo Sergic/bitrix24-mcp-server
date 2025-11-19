@@ -98,7 +98,7 @@ async function searchLeadsByPhone(phone) {
   }
 }
 
-const phone = process.argv[2] || '+380971518745';
+const phone = process.argv[2] || '+15551234567';
 console.log(`\n🔍 Searching for leads with phone: ${phone}\n`);
 
 searchLeadsByPhone(phone)

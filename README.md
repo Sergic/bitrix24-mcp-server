@@ -21,10 +21,11 @@ docker-compose up -d
 ## 🚀 Features
 
 - **Complete CRM Management**: Create, read, update, and list contacts, deals, and tasks
-- **Advanced Search**: Search across all CRM entities with flexible filtering
+- **Advanced Search**: Search across all CRM entities with flexible filtering (phone and email)
 - **Rate Limiting**: Built-in rate limiting to respect Bitrix24 API limits
 - **Type Safety**: Full TypeScript implementation with comprehensive type definitions
 - **Error Handling**: Robust error handling and validation
+- **Comprehensive Testing**: 27+ unit tests and integration tests for reliability
 - **Easy Integration**: Simple setup with Claude Desktop and other MCP-compatible clients
 
 ## 📋 Available Tools
@@ -398,8 +399,10 @@ bitrix24-mcp-server/
 │   ├── config/
 │   │   └── index.ts           # Configuration management
 │   └── index.ts               # Main MCP server
-├── test/                       # Integration tests
-│   └── integration.test.js
+├── test/                       # Tests
+│   ├── unit/                  # Unit tests (fast, no API calls)
+│   │   └── search-crm.test.js
+│   └── integration.test.js    # Integration tests (with real API)
 ├── scripts/                    # Utility scripts
 │   ├── test/                  # Test scripts
 │   ├── install/               # Installation scripts (Windows)
@@ -439,11 +442,65 @@ npm run build
 npm run dev
 
 # Run tests
-npm test
+npm test              # Integration tests only
+npm run test:unit     # Unit tests only
+npm run test:all      # All tests (unit + integration)
 
 # Start the server
 npm start
 ```
+
+## 🧪 Testing
+
+The project includes comprehensive test coverage with both unit tests and integration tests.
+
+### Running Tests
+
+```bash
+# Run all tests (unit + integration)
+npm run test:all
+
+# Run only unit tests (fast, no API calls)
+npm run test:unit
+
+# Run only integration tests (requires Bitrix24 webhook)
+npm test
+```
+
+### Test Structure
+
+- **Unit Tests** (`test/unit/`) - Fast tests that verify logic without API calls
+  - Phone/email detection logic
+  - Entity type conversion
+  - Parameter building
+  - Integration scenarios
+
+- **Integration Tests** (`test/integration.test.js`) - Full end-to-end tests with real Bitrix24 API
+  - Webhook validation
+  - Contact/Deal/Task CRUD operations
+  - CRM search functionality (email and phone)
+  - Multi-entity search scenarios
+
+### Test Coverage
+
+✅ **27 unit tests** covering:
+- Phone number detection (8 tests)
+- Entity type conversion (9 tests)
+- Parameter building (7 tests)
+- Integration scenarios (3 tests)
+
+✅ **Integration tests** covering:
+- Webhook validation
+- Contact management
+- Deal management
+- Task management
+- CRM search by email
+- CRM search by phone
+- Multi-entity search
+
+### Writing Tests
+
+Unit tests are located in `test/unit/` and use a simple test framework without external dependencies. Integration tests use the actual Bitrix24 API and require a valid webhook URL in `.env`.
 
 ### Adding New Tools
 
@@ -577,8 +634,9 @@ docs/
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+4. Add tests if applicable (unit tests for logic, integration tests for API calls)
+5. Run `npm run test:all` to ensure all tests pass
+6. Submit a pull request
 
 ## 📄 License
 

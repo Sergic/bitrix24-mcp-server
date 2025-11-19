@@ -210,6 +210,22 @@ export class Bitrix24Client {
             Object.entries(value).forEach(([filterKey, filterValue]) => {
               body.append(`filter[${filterKey}]`, String(filterValue));
             });
+          } else if (key === 'VALUES' && Array.isArray(value)) {
+            // Handle VALUES array parameter specially (for crm.duplicate.findbycomm)
+            // According to Bitrix24 API docs, VALUES should be sent as VALUES[0], VALUES[1], etc.
+            value.forEach((item, index) => {
+              body.append(`VALUES[${index}]`, String(item));
+            });
+          } else if (key === 'communication' && typeof value === 'object' && value !== null) {
+            // Handle communication parameter specially (for crm.duplicate.findbycomm)
+            if (value.type) {
+              body.append('communication[type]', String(value.type));
+            }
+            if (Array.isArray(value.values)) {
+              value.values.forEach((item: any, index: number) => {
+                body.append(`communication[values][${index}]`, String(item));
+              });
+            }
           } else if (key === 'values' && Array.isArray(value)) {
             // Handle values array parameter specially (for crm.duplicate.findbycomm)
             value.forEach((item, index) => {
@@ -699,14 +715,16 @@ export class Bitrix24Client {
     // Filter out 'deal' as it's not supported by crm.duplicate.findbycomm
     const validTypes = entityTypes.filter(t => t !== 'deal').map(t => entityTypeMap[t.toLowerCase()]).filter(Boolean);
     
+    // According to Bitrix24 API docs: https://apidocs.bitrix24.com/api-reference/crm/duplicates/crm-duplicate-find-by-comm.html
+    // Parameters must be: TYPE, VALUES, ENTITY_TYPE (all uppercase)
     const params: Record<string, any> = {
-      type: 'EMAIL',
-      values: [query]
+      TYPE: 'EMAIL',
+      VALUES: [query]
     };
     
-    // Only set entity_type if exactly one type is specified
+    // Only set ENTITY_TYPE if exactly one type is specified
     if (validTypes.length === 1) {
-      params.entity_type = validTypes[0];
+      params.ENTITY_TYPE = validTypes[0];
     }
     
     return await this.makeRequest('crm.duplicate.findbycomm', params);
@@ -724,14 +742,16 @@ export class Bitrix24Client {
     // Filter out 'deal' as it's not supported by crm.duplicate.findbycomm
     const validTypes = entityTypes.filter(t => t !== 'deal').map(t => entityTypeMap[t.toLowerCase()]).filter(Boolean);
     
+    // According to Bitrix24 API docs: https://apidocs.bitrix24.com/api-reference/crm/duplicates/crm-duplicate-find-by-comm.html
+    // Parameters must be: TYPE, VALUES, ENTITY_TYPE (all uppercase)
     const params: Record<string, any> = {
-      type: 'PHONE',
-      values: [phone]
+      TYPE: 'PHONE',
+      VALUES: [phone]
     };
     
-    // Only set entity_type if exactly one type is specified
+    // Only set ENTITY_TYPE if exactly one type is specified
     if (validTypes.length === 1) {
-      params.entity_type = validTypes[0];
+      params.ENTITY_TYPE = validTypes[0];
     }
     
     return await this.makeRequest('crm.duplicate.findbycomm', params);
