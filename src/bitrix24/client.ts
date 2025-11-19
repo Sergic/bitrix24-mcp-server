@@ -716,15 +716,15 @@ export class Bitrix24Client {
     const validTypes = entityTypes.filter(t => t !== 'deal').map(t => entityTypeMap[t.toLowerCase()]).filter(Boolean);
     
     // According to Bitrix24 API docs: https://apidocs.bitrix24.com/api-reference/crm/duplicates/crm-duplicate-find-by-comm.html
-    // Parameters must be: TYPE, VALUES, ENTITY_TYPE (all uppercase)
+    // Parameters must be: type, values, entity_type (lowercase keys, but type value is uppercase: PHONE/EMAIL)
     const params: Record<string, any> = {
-      TYPE: 'EMAIL',
-      VALUES: [query]
+      type: 'EMAIL',
+      values: [query]
     };
     
-    // Only set ENTITY_TYPE if exactly one type is specified
+    // Only set entity_type if exactly one type is specified
     if (validTypes.length === 1) {
-      params.ENTITY_TYPE = validTypes[0];
+      params.entity_type = validTypes[0];
     }
     
     return await this.makeRequest('crm.duplicate.findbycomm', params);
@@ -743,15 +743,15 @@ export class Bitrix24Client {
     const validTypes = entityTypes.filter(t => t !== 'deal').map(t => entityTypeMap[t.toLowerCase()]).filter(Boolean);
     
     // According to Bitrix24 API docs: https://apidocs.bitrix24.com/api-reference/crm/duplicates/crm-duplicate-find-by-comm.html
-    // Parameters must be: TYPE, VALUES, ENTITY_TYPE (all uppercase)
+    // Parameters must be: type, values, entity_type (lowercase keys, but type value is uppercase: PHONE/EMAIL)
     const params: Record<string, any> = {
-      TYPE: 'PHONE',
-      VALUES: [phone]
+      type: 'PHONE',
+      values: [phone]
     };
     
-    // Only set ENTITY_TYPE if exactly one type is specified
+    // Only set entity_type if exactly one type is specified
     if (validTypes.length === 1) {
-      params.ENTITY_TYPE = validTypes[0];
+      params.entity_type = validTypes[0];
     }
     
     return await this.makeRequest('crm.duplicate.findbycomm', params);
