@@ -133,6 +133,15 @@ export interface BitrixCompany {
   DATE_MODIFY?: string;
 }
 
+/** Count activities grouped by TYPE_ID (1=meeting, 2=call, 4=email, …). */
+export function summarizeActivitiesByTypeId(activities: any[]): Record<string, number> {
+  return activities.reduce((acc: Record<string, number>, activity: any) => {
+    const key = String(activity.TYPE_ID ?? 'unknown');
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+}
+
 export class Bitrix24Client {
   private baseUrl: string;
   private requestCount = 0;
@@ -230,6 +239,10 @@ export class Bitrix24Client {
             // Handle values array parameter specially (for crm.duplicate.findbycomm)
             value.forEach((item, index) => {
               body.append(`values[${index}]`, String(item));
+            });
+          } else if (key === 'select' && Array.isArray(value)) {
+            value.forEach((item, index) => {
+              body.append(`select[${index}]`, String(item));
             });
           } else if (typeof value === 'object' && value !== null) {
             body.append(key, JSON.stringify(value));
@@ -421,6 +434,160 @@ export class Bitrix24Client {
     });
     
     return sortedLeads.slice(0, limit);
+  }
+
+  /** Bitrix crm.enum.ownertype: Lead = 1 */
+  static readonly LEAD_OWNER_TYPE_ID = 1;
+  /** Bitrix crm.timeline.comment.list ENTITY_TYPE */
+  static readonly LEAD_ENTITY_TYPE = 'lead';
+
+  /**
+   * Timeline comments for a lead (manager notes, часть переписки).
+   * API: crm.timeline.comment.list — filter ENTITY_ID + ENTITY_TYPE=lead
+   */
+  async listLeadTimelineComments(
+    leadId: string,
+    options: {
+      limit?: number;
+      start?: number;
+      order?: Record<string, 'ASC' | 'DESC'>;
+      select?: string[];
+    } = {}
+  ): Promise<any[]> {
+    const params: Record<string, any> = {
+      filter: {
+        ENTITY_ID: leadId,
+        ENTITY_TYPE: Bitrix24Client.LEAD_ENTITY_TYPE,
+      },
+      select: options.select ?? [
+        'ID',
+        'CREATED',
+        'AUTHOR_ID',
+        'COMMENT',
+        'FILES',
+      ],
+      order: options.order ?? { CREATED: 'DESC' },
+    };
+    if (options.start !== undefined) {
+      params.start = options.start;
+    }
+
+    const items = await this.makeRequest('crm.timeline.comment.list', params);
+    const list = Array.isArray(items) ? items : [];
+    const limit = options.limit ?? 50;
+    return list.slice(0, limit);
+  }
+
+  /**
+   * CRM activities for a lead: calls, emails, SMS, Viber, tasks.
+   * API: crm.activity.list — filter OWNER_ID + OWNER_TYPE_ID=1 (lead)
+   */
+  async listLeadActivities(
+    leadId: string,
+    options: {
+      limit?: number;
+      start?: number;
+      typeIds?: number[];
+      completed?: 'Y' | 'N';
+      order?: Record<string, string>;
+      select?: string[];
+    } = {}
+  ): Promise<any[]> {
+    const filter: Record<string, any> = {
+      OWNER_ID: leadId,
+      OWNER_TYPE_ID: Bitrix24Client.LEAD_OWNER_TYPE_ID,
+    };
+
+    if (options.typeIds?.length === 1) {
+      filter.TYPE_ID = options.typeIds[0];
+    }
+    if (options.completed) {
+      filter.COMPLETED = options.completed;
+    }
+
+    const params: Record<string, any> = {
+      filter,
+      select: options.select ?? [
+        'ID',
+        'TYPE_ID',
+        'PROVIDER_ID',
+        'PROVIDER_TYPE_ID',
+        'PROVIDER_GROUP_ID',
+        'SUBJECT',
+        'DESCRIPTION',
+        'CREATED',
+        'LAST_UPDATED',
+        'START_TIME',
+        'END_TIME',
+        'COMPLETED',
+        'DIRECTION',
+        'RESPONSIBLE_ID',
+        'AUTHOR_ID',
+        'COMMUNICATIONS',
+        'FILES',
+      ],
+      order: options.order ?? { CREATED: 'DESC' },
+    };
+
+    if (options.limit !== undefined) {
+      params.limit = options.limit;
+    }
+    if (options.start !== undefined) {
+      params.start = options.start;
+    }
+
+    let activities = await this.makeRequest('crm.activity.list', params);
+    if (!Array.isArray(activities)) {
+      activities = [];
+    }
+
+    if (options.typeIds && options.typeIds.length > 1) {
+      const typeSet = new Set(options.typeIds.map(String));
+      activities = activities.filter((a: any) => typeSet.has(String(a.TYPE_ID)));
+    }
+
+    const limit = options.limit ?? 50;
+    return activities.slice(0, limit);
+  }
+
+  /** Timeline + activities in one call (dress-course lead research workflow). */
+  async getLeadCommunications(
+    leadId: string,
+    options: {
+      timelineLimit?: number;
+      activityLimit?: number;
+      typeIds?: number[];
+      completed?: 'Y' | 'N';
+    } = {}
+  ): Promise<{
+    leadId: string;
+    timeline: any[];
+    activities: any[];
+    summary: {
+      timelineComments: number;
+      activities: number;
+      activitiesByTypeId: Record<string, number>;
+    };
+  }> {
+    const [timeline, activities] = await Promise.all([
+      this.listLeadTimelineComments(leadId, { limit: options.timelineLimit ?? 50 }),
+      this.listLeadActivities(leadId, {
+        limit: options.activityLimit ?? 50,
+        typeIds: options.typeIds,
+        completed: options.completed,
+      }),
+    ]);
+
+    return {
+      leadId,
+      timeline,
+      activities,
+      summary: {
+        timelineComments: timeline.length,
+        activities: activities.length,
+        activitiesByTypeId: summarizeActivitiesByTypeId(activities),
+      },
+    };
   }
 
   // CRM Company Methods

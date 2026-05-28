@@ -206,6 +206,71 @@ export const getLeadTool: Tool = {
   }
 };
 
+export const getLeadTimelineTool: Tool = {
+  name: 'bitrix24_get_lead_timeline',
+  description:
+    'Timeline comments for a lead (crm.timeline.comment.list). Manager notes and thread fragments. Filter: ENTITY_ID + ENTITY_TYPE=lead.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      leadId: { type: 'string', description: 'Lead ID from search_crm or get_lead' },
+      limit: { type: 'number', description: 'Max comments to return', default: 50 },
+      start: { type: 'number', description: 'Pagination offset (page size 50 in Bitrix)' }
+    },
+    required: ['leadId']
+  }
+};
+
+export const getLeadActivitiesTool: Tool = {
+  name: 'bitrix24_get_lead_activities',
+  description:
+    'CRM activities for a lead (crm.activity.list): calls, emails, SMS, Viber, tasks. Filter: OWNER_ID + OWNER_TYPE_ID=1. TYPE_ID: 1=meeting, 2=call, 4=email; other types = integrations. Use select COMMUNICATIONS for message bodies.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      leadId: { type: 'string', description: 'Lead ID' },
+      limit: { type: 'number', description: 'Max activities', default: 50 },
+      start: { type: 'number', description: 'Pagination offset' },
+      typeIds: {
+        type: 'array',
+        items: { type: 'number' },
+        description: 'Filter by TYPE_ID (e.g. [2] calls only, [4] email only)'
+      },
+      completed: {
+        type: 'string',
+        enum: ['Y', 'N'],
+        description: 'Filter by completion flag'
+      }
+    },
+    required: ['leadId']
+  }
+};
+
+export const getLeadCommunicationsTool: Tool = {
+  name: 'bitrix24_get_lead_communications',
+  description:
+    'Combined lead communications: timeline comments + activities in one request. Use after bitrix24_search_crm and bitrix24_get_lead for junk-lead / Viber-SMS analysis.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      leadId: { type: 'string', description: 'Lead ID' },
+      timelineLimit: { type: 'number', description: 'Max timeline comments', default: 50 },
+      activityLimit: { type: 'number', description: 'Max activities', default: 50 },
+      typeIds: {
+        type: 'array',
+        items: { type: 'number' },
+        description: 'Optional activity TYPE_ID filter'
+      },
+      completed: {
+        type: 'string',
+        enum: ['Y', 'N'],
+        description: 'Optional activity completion filter'
+      }
+    },
+    required: ['leadId']
+  }
+};
+
 export const listLeadsTool: Tool = {
   name: 'bitrix24_list_leads',
   description: 'List leads with optional filtering and ordering',
@@ -1010,6 +1075,9 @@ export const allTools = [
   updateDealTool,
   createLeadTool,
   getLeadTool,
+  getLeadTimelineTool,
+  getLeadActivitiesTool,
+  getLeadCommunicationsTool,
   listLeadsTool,
   getLatestLeadsTool,
   getLeadsFromDateRangeTool,
@@ -1173,6 +1241,44 @@ export async function executeToolCall(name: string, args: any): Promise<any> {
       case 'bitrix24_get_lead':
         const leadData = await bitrix24Client.getLead(args.id);
         return { success: true, lead: leadData };
+
+      case 'bitrix24_get_lead_timeline': {
+        const timeline = await bitrix24Client.listLeadTimelineComments(args.leadId, {
+          limit: args.limit,
+          start: args.start
+        });
+        return {
+          success: true,
+          leadId: args.leadId,
+          count: timeline.length,
+          timeline
+        };
+      }
+
+      case 'bitrix24_get_lead_activities': {
+        const activities = await bitrix24Client.listLeadActivities(args.leadId, {
+          limit: args.limit,
+          start: args.start,
+          typeIds: args.typeIds,
+          completed: args.completed
+        });
+        return {
+          success: true,
+          leadId: args.leadId,
+          count: activities.length,
+          activities
+        };
+      }
+
+      case 'bitrix24_get_lead_communications': {
+        const communications = await bitrix24Client.getLeadCommunications(args.leadId, {
+          timelineLimit: args.timelineLimit,
+          activityLimit: args.activityLimit,
+          typeIds: args.typeIds,
+          completed: args.completed
+        });
+        return { success: true, ...communications };
+      }
 
       case 'bitrix24_list_leads':
         const leadOrder: Record<string, string> = {};
