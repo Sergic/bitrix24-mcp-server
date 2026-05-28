@@ -271,6 +271,71 @@ export const getLeadCommunicationsTool: Tool = {
   }
 };
 
+export const getDealTimelineTool: Tool = {
+  name: 'bitrix24_get_deal_timeline',
+  description:
+    'Timeline comments for a deal (crm.timeline.comment.list). Manager notes. Filter: ENTITY_ID + ENTITY_TYPE=deal.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      dealId: { type: 'string', description: 'Deal ID from get_deal or list_deals' },
+      limit: { type: 'number', description: 'Max comments to return', default: 50 },
+      start: { type: 'number', description: 'Pagination offset' }
+    },
+    required: ['dealId']
+  }
+};
+
+export const getDealActivitiesTool: Tool = {
+  name: 'bitrix24_get_deal_activities',
+  description:
+    'CRM activities for a deal (crm.activity.list): calls, emails, SMS, Viber, tasks. OWNER_TYPE_ID=2. TYPE_ID: 1=meeting, 2=call, 4=email.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      dealId: { type: 'string', description: 'Deal ID' },
+      limit: { type: 'number', description: 'Max activities', default: 50 },
+      start: { type: 'number', description: 'Pagination offset' },
+      typeIds: {
+        type: 'array',
+        items: { type: 'number' },
+        description: 'Filter by TYPE_ID (e.g. [2] calls, [4] email)'
+      },
+      completed: {
+        type: 'string',
+        enum: ['Y', 'N'],
+        description: 'Filter by completion flag'
+      }
+    },
+    required: ['dealId']
+  }
+};
+
+export const getDealCommunicationsTool: Tool = {
+  name: 'bitrix24_get_deal_communications',
+  description:
+    'Combined deal communications: timeline comments + activities in one request. Use after bitrix24_get_deal for payment / follow-up analysis.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      dealId: { type: 'string', description: 'Deal ID' },
+      timelineLimit: { type: 'number', description: 'Max timeline comments', default: 50 },
+      activityLimit: { type: 'number', description: 'Max activities', default: 50 },
+      typeIds: {
+        type: 'array',
+        items: { type: 'number' },
+        description: 'Optional activity TYPE_ID filter'
+      },
+      completed: {
+        type: 'string',
+        enum: ['Y', 'N'],
+        description: 'Optional activity completion filter'
+      }
+    },
+    required: ['dealId']
+  }
+};
+
 export const listLeadsTool: Tool = {
   name: 'bitrix24_list_leads',
   description: 'List leads with optional filtering and ordering',
@@ -1078,6 +1143,9 @@ export const allTools = [
   getLeadTimelineTool,
   getLeadActivitiesTool,
   getLeadCommunicationsTool,
+  getDealTimelineTool,
+  getDealActivitiesTool,
+  getDealCommunicationsTool,
   listLeadsTool,
   getLatestLeadsTool,
   getLeadsFromDateRangeTool,
@@ -1184,6 +1252,44 @@ export async function executeToolCall(name: string, args: any): Promise<any> {
       case 'bitrix24_get_deal':
         const dealData = await bitrix24Client.getDeal(args.id);
         return { success: true, deal: dealData };
+
+      case 'bitrix24_get_deal_timeline': {
+        const dealTimeline = await bitrix24Client.listDealTimelineComments(args.dealId, {
+          limit: args.limit,
+          start: args.start
+        });
+        return {
+          success: true,
+          dealId: args.dealId,
+          count: dealTimeline.length,
+          timeline: dealTimeline
+        };
+      }
+
+      case 'bitrix24_get_deal_activities': {
+        const dealActivities = await bitrix24Client.listDealActivities(args.dealId, {
+          limit: args.limit,
+          start: args.start,
+          typeIds: args.typeIds,
+          completed: args.completed
+        });
+        return {
+          success: true,
+          dealId: args.dealId,
+          count: dealActivities.length,
+          activities: dealActivities
+        };
+      }
+
+      case 'bitrix24_get_deal_communications': {
+        const dealCommunications = await bitrix24Client.getDealCommunications(args.dealId, {
+          timelineLimit: args.timelineLimit,
+          activityLimit: args.activityLimit,
+          typeIds: args.typeIds,
+          completed: args.completed
+        });
+        return { success: true, ...dealCommunications };
+      }
 
       case 'bitrix24_list_deals':
         const dealOrder: Record<string, string> = {};

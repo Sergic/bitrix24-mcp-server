@@ -142,6 +142,29 @@ export function summarizeActivitiesByTypeId(activities: any[]): Record<string, n
   }, {});
 }
 
+export type TimelineOptions = {
+  limit?: number;
+  start?: number;
+  order?: Record<string, 'ASC' | 'DESC'>;
+  select?: string[];
+};
+
+export type ActivityOptions = {
+  limit?: number;
+  start?: number;
+  typeIds?: number[];
+  completed?: 'Y' | 'N';
+  order?: Record<string, string>;
+  select?: string[];
+};
+
+export type CommunicationsOptions = {
+  timelineLimit?: number;
+  activityLimit?: number;
+  typeIds?: number[];
+  completed?: 'Y' | 'N';
+};
+
 export class Bitrix24Client {
   private baseUrl: string;
   private requestCount = 0;
@@ -436,36 +459,56 @@ export class Bitrix24Client {
     return sortedLeads.slice(0, limit);
   }
 
-  /** Bitrix crm.enum.ownertype: Lead = 1 */
+  /** Bitrix crm.enum.ownertype */
   static readonly LEAD_OWNER_TYPE_ID = 1;
-  /** Bitrix crm.timeline.comment.list ENTITY_TYPE */
+  static readonly DEAL_OWNER_TYPE_ID = 2;
+  /** crm.timeline.comment.list ENTITY_TYPE */
   static readonly LEAD_ENTITY_TYPE = 'lead';
+  static readonly DEAL_ENTITY_TYPE = 'deal';
+
+  private static readonly TIMELINE_COMMENT_SELECT = [
+    'ID',
+    'CREATED',
+    'AUTHOR_ID',
+    'COMMENT',
+    'FILES',
+  ];
+
+  private static readonly ACTIVITY_SELECT = [
+    'ID',
+    'TYPE_ID',
+    'PROVIDER_ID',
+    'PROVIDER_TYPE_ID',
+    'PROVIDER_GROUP_ID',
+    'SUBJECT',
+    'DESCRIPTION',
+    'CREATED',
+    'LAST_UPDATED',
+    'START_TIME',
+    'END_TIME',
+    'COMPLETED',
+    'DIRECTION',
+    'RESPONSIBLE_ID',
+    'AUTHOR_ID',
+    'COMMUNICATIONS',
+    'FILES',
+  ];
 
   /**
-   * Timeline comments for a lead (manager notes, часть переписки).
-   * API: crm.timeline.comment.list — filter ENTITY_ID + ENTITY_TYPE=lead
+   * Timeline comments (manager notes).
+   * API: crm.timeline.comment.list — ENTITY_ID + ENTITY_TYPE (lead | deal)
    */
-  async listLeadTimelineComments(
-    leadId: string,
-    options: {
-      limit?: number;
-      start?: number;
-      order?: Record<string, 'ASC' | 'DESC'>;
-      select?: string[];
-    } = {}
+  async listTimelineComments(
+    entityId: string,
+    entityType: string,
+    options: TimelineOptions = {}
   ): Promise<any[]> {
     const params: Record<string, any> = {
       filter: {
-        ENTITY_ID: leadId,
-        ENTITY_TYPE: Bitrix24Client.LEAD_ENTITY_TYPE,
+        ENTITY_ID: entityId,
+        ENTITY_TYPE: entityType,
       },
-      select: options.select ?? [
-        'ID',
-        'CREATED',
-        'AUTHOR_ID',
-        'COMMENT',
-        'FILES',
-      ],
+      select: options.select ?? Bitrix24Client.TIMELINE_COMMENT_SELECT,
       order: options.order ?? { CREATED: 'DESC' },
     };
     if (options.start !== undefined) {
@@ -474,28 +517,21 @@ export class Bitrix24Client {
 
     const items = await this.makeRequest('crm.timeline.comment.list', params);
     const list = Array.isArray(items) ? items : [];
-    const limit = options.limit ?? 50;
-    return list.slice(0, limit);
+    return list.slice(0, options.limit ?? 50);
   }
 
   /**
-   * CRM activities for a lead: calls, emails, SMS, Viber, tasks.
-   * API: crm.activity.list — filter OWNER_ID + OWNER_TYPE_ID=1 (lead)
+   * CRM activities: calls, emails, SMS, Viber, tasks.
+   * API: crm.activity.list — OWNER_ID + OWNER_TYPE_ID (1=lead, 2=deal)
    */
-  async listLeadActivities(
-    leadId: string,
-    options: {
-      limit?: number;
-      start?: number;
-      typeIds?: number[];
-      completed?: 'Y' | 'N';
-      order?: Record<string, string>;
-      select?: string[];
-    } = {}
+  async listCrmActivities(
+    ownerId: string,
+    ownerTypeId: number,
+    options: ActivityOptions = {}
   ): Promise<any[]> {
     const filter: Record<string, any> = {
-      OWNER_ID: leadId,
-      OWNER_TYPE_ID: Bitrix24Client.LEAD_OWNER_TYPE_ID,
+      OWNER_ID: ownerId,
+      OWNER_TYPE_ID: ownerTypeId,
     };
 
     if (options.typeIds?.length === 1) {
@@ -507,25 +543,7 @@ export class Bitrix24Client {
 
     const params: Record<string, any> = {
       filter,
-      select: options.select ?? [
-        'ID',
-        'TYPE_ID',
-        'PROVIDER_ID',
-        'PROVIDER_TYPE_ID',
-        'PROVIDER_GROUP_ID',
-        'SUBJECT',
-        'DESCRIPTION',
-        'CREATED',
-        'LAST_UPDATED',
-        'START_TIME',
-        'END_TIME',
-        'COMPLETED',
-        'DIRECTION',
-        'RESPONSIBLE_ID',
-        'AUTHOR_ID',
-        'COMMUNICATIONS',
-        'FILES',
-      ],
+      select: options.select ?? Bitrix24Client.ACTIVITY_SELECT,
       order: options.order ?? { CREATED: 'DESC' },
     };
 
@@ -546,19 +564,34 @@ export class Bitrix24Client {
       activities = activities.filter((a: any) => typeSet.has(String(a.TYPE_ID)));
     }
 
-    const limit = options.limit ?? 50;
-    return activities.slice(0, limit);
+    return activities.slice(0, options.limit ?? 50);
   }
 
-  /** Timeline + activities in one call (dress-course lead research workflow). */
+  async listLeadTimelineComments(
+    leadId: string,
+    options: TimelineOptions = {}
+  ): Promise<any[]> {
+    return this.listTimelineComments(leadId, Bitrix24Client.LEAD_ENTITY_TYPE, options);
+  }
+
+  async listDealTimelineComments(
+    dealId: string,
+    options: TimelineOptions = {}
+  ): Promise<any[]> {
+    return this.listTimelineComments(dealId, Bitrix24Client.DEAL_ENTITY_TYPE, options);
+  }
+
+  async listLeadActivities(leadId: string, options: ActivityOptions = {}): Promise<any[]> {
+    return this.listCrmActivities(leadId, Bitrix24Client.LEAD_OWNER_TYPE_ID, options);
+  }
+
+  async listDealActivities(dealId: string, options: ActivityOptions = {}): Promise<any[]> {
+    return this.listCrmActivities(dealId, Bitrix24Client.DEAL_OWNER_TYPE_ID, options);
+  }
+
   async getLeadCommunications(
     leadId: string,
-    options: {
-      timelineLimit?: number;
-      activityLimit?: number;
-      typeIds?: number[];
-      completed?: 'Y' | 'N';
-    } = {}
+    options: CommunicationsOptions = {}
   ): Promise<{
     leadId: string;
     timeline: any[];
@@ -580,6 +613,40 @@ export class Bitrix24Client {
 
     return {
       leadId,
+      timeline,
+      activities,
+      summary: {
+        timelineComments: timeline.length,
+        activities: activities.length,
+        activitiesByTypeId: summarizeActivitiesByTypeId(activities),
+      },
+    };
+  }
+
+  async getDealCommunications(
+    dealId: string,
+    options: CommunicationsOptions = {}
+  ): Promise<{
+    dealId: string;
+    timeline: any[];
+    activities: any[];
+    summary: {
+      timelineComments: number;
+      activities: number;
+      activitiesByTypeId: Record<string, number>;
+    };
+  }> {
+    const [timeline, activities] = await Promise.all([
+      this.listDealTimelineComments(dealId, { limit: options.timelineLimit ?? 50 }),
+      this.listDealActivities(dealId, {
+        limit: options.activityLimit ?? 50,
+        typeIds: options.typeIds,
+        completed: options.completed,
+      }),
+    ]);
+
+    return {
+      dealId,
       timeline,
       activities,
       summary: {
