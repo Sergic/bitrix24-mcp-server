@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 import { z } from 'zod';
 import { config } from 'dotenv';
+import { buildDateCreateFilter } from './date-filter.js';
 
 // Load environment variables
 config();
@@ -373,13 +374,7 @@ export class Bitrix24Client {
 
   // Helper method to get deals from a specific date range
   async getDealsFromDateRange(startDate: string, endDate?: string, limit: number = 50): Promise<BitrixDeal[]> {
-    const filter: Record<string, any> = {
-      '>=DATE_CREATE': startDate
-    };
-    
-    if (endDate) {
-      filter['<=DATE_CREATE'] = endDate;
-    }
+    const filter = buildDateCreateFilter(startDate, endDate);
 
     const deals = await this.makeRequest('crm.deal.list', {
       start: 0,
@@ -435,13 +430,7 @@ export class Bitrix24Client {
 
   // Helper method to get leads from a specific date range
   async getLeadsFromDateRange(startDate: string, endDate?: string, limit: number = 50): Promise<BitrixLead[]> {
-    const filter: Record<string, any> = {
-      '>=DATE_CREATE': startDate
-    };
-    
-    if (endDate) {
-      filter['<=DATE_CREATE'] = endDate;
-    }
+    const filter = buildDateCreateFilter(startDate, endDate);
 
     const leads = await this.makeRequest('crm.lead.list', {
       start: 0,
@@ -694,13 +683,7 @@ export class Bitrix24Client {
 
   // Helper method to get companies from a specific date range
   async getCompaniesFromDateRange(startDate: string, endDate?: string, limit: number = 50): Promise<BitrixCompany[]> {
-    const filter: Record<string, any> = {
-      '>=DATE_CREATE': startDate
-    };
-    
-    if (endDate) {
-      filter['<=DATE_CREATE'] = endDate;
-    }
+    const filter = buildDateCreateFilter(startDate, endDate);
 
     const companies = await this.makeRequest('crm.company.list', {
       start: 0,
